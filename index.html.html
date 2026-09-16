@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Money Forever">
+<title>Money Forever</title>
+<style>
+:root{--paper:#FFF7E6;--paper-card:#FFF;--paper-dark:#FFEFC4;--ink:#241F42;--ink-soft:#746D9C;--rule:#F2DFA3;--rule-strong:#F0C24B;--seal:#F0428C;--seal-soft:#F0428C22;--teal:#06A77D;--teal-soft:#06A77D22;--gold:#FFB400;--note:#2F6FED;--note-soft:#2F6FED22;--danger:#E63946;--font-main:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif}
+*{box-sizing:border-box}html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);font-family:var(--font-main);font-weight:700;overflow-x:hidden;min-height:100%}body{padding:24px 20px 60px;min-height:100vh}.wrap{max-width:960px;margin:auto}
+.ledger-header{display:flex;align-items:baseline;justify-content:space-between;border-bottom:4px solid transparent;border-image:linear-gradient(90deg,var(--seal),var(--gold),var(--teal)) 1;padding-bottom:14px;margin-bottom:22px;flex-wrap:wrap;gap:10px}.ledger-header h1{font-size:30px;margin:0;background:linear-gradient(90deg,var(--seal),var(--gold) 55%,var(--teal));-webkit-background-clip:text;background-clip:text;color:transparent}.sub{font-size:12px;color:var(--ink-soft);margin-top:6px}
+.tabs{display:flex;border-bottom:1px solid var(--rule);margin-bottom:20px}.tab-btn{background:none;border:0;font-size:16px;padding:10px 18px;color:var(--ink-soft);border-radius:8px 8px 0 0}.tab-btn.active{color:var(--ink);border-bottom:3px solid var(--seal);background:var(--paper-dark)}.view{display:none}.view.active{display:block}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.month-label{font-size:20px}.nav-btns{display:flex;gap:8px}.nav-btns button,.icon-btn{background:var(--paper-card);border:2px solid var(--rule-strong);color:var(--ink);padding:6px 14px;border-radius:20px}.nav-btns .today-btn{color:#fff;background:var(--seal);border-color:var(--seal)}
+.calendar{border:2px solid var(--rule-strong);background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 6px 20px rgba(240,194,75,.18)}.cal-weekdays,.cal-grid{display:grid;grid-template-columns:repeat(7,1fr)}.cal-weekdays{border-bottom:2px solid var(--rule-strong);background:var(--paper-dark)}.cal-weekdays div{text-align:center;padding:9px 0;font-size:12px;color:var(--ink-soft);border-right:1px solid var(--rule)}.cal-cell{min-height:96px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:6px;cursor:pointer}.cal-cell:nth-child(7n){border-right:0}.other-month{opacity:.35}.cal-cell.today{background:#FFE8B8}.daynum{font-size:13px;color:var(--ink-soft)}.today .daynum{color:#fff;background:var(--seal);width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center}
+.chip-list{margin-top:4px;display:flex;flex-direction:column;gap:3px}.chip{font-size:11px;padding:3px 7px;border-radius:20px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:var(--paper-dark)}.p-鳳雪{background:var(--seal-soft)!important;color:#C2222B}.p-忠村{background:var(--teal-soft)!important;color:#046651}.p-both{background:linear-gradient(90deg,var(--seal-soft) 50%,var(--teal-soft) 50%)}.p-note{background:var(--note-soft)!important;color:var(--note)}
+.overlay{position:fixed;inset:0;height:100dvh;background:rgba(42,36,32,.45);display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto;z-index:50}.overlay.active{display:flex}.panel{background:#fff;border:2px solid var(--rule-strong);max-width:520px;width:100%;padding:26px;position:relative;border-radius:18px}.panel h2{font-size:18px;margin:0 0 4px}.panel-sub{font-size:12px;color:var(--ink-soft);margin-bottom:16px}.close-x{position:absolute;top:16px;right:18px;background:none;border:0;font-size:20px;color:var(--ink-soft)}
+.day-job-item{border:2px solid var(--rule);background:var(--paper);padding:12px 14px;margin-bottom:10px;display:flex;justify-content:space-between;gap:8px;border-radius:14px}.info{flex:1}.jname{font-size:14px}.jtime{font-size:12px;color:var(--ink-soft);margin-top:2px}.jpeople{margin-top:6px;display:flex;gap:6px;flex-wrap:wrap}.tag{font-size:11px;padding:3px 9px;border-radius:20px}.job-actions{display:flex;gap:6px}.icon-btn{padding:5px 10px;font-size:12px}.add-job-btn,.save-btn{width:100%;padding:11px;margin-top:8px;background:var(--seal);color:#fff;border:0;border-radius:24px;font-size:14px}.add-note-btn,.cancel-btn{width:100%;padding:10px;margin-top:8px;background:none;color:var(--ink-soft);border:2px dashed var(--rule-strong);border-radius:24px}.type-toggle{display:flex;gap:8px;margin-bottom:16px}.type-btn{flex:1;padding:9px;border:2px solid var(--rule-strong);background:#fff;color:var(--ink-soft);border-radius:20px}.type-btn.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.field{margin-bottom:14px}.field label{display:block;font-size:12px;color:var(--ink-soft);margin-bottom:4px}.field input,.field select{width:100%;padding:9px 12px;border:2px solid var(--rule-strong);background:#fff;font-size:16px;color:var(--ink);border-radius:10px}.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.person-block{border:2px solid var(--rule-strong);padding:14px;margin-bottom:12px;background:#fff;border-radius:14px}.person-block.disabled{opacity:.5}.person-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}.person-head input{width:17px}.paytype-radios{display:flex;gap:14px;margin-bottom:8px;font-size:13px}.paytype-radios label{display:flex;align-items:center;gap:5px}.paytype-radios input{width:auto}.warn-box{background:#FFE9DA;border:2px solid var(--danger);color:var(--danger);font-size:12.5px;padding:10px 12px;margin-bottom:14px;border-radius:12px}
+.settle-controls{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:flex-end}.settle-controls .field{margin:0;flex:1;min-width:140px}.export-btn{padding:10px 18px;background:var(--gold);border:0;border-radius:24px;font-weight:700}.settle-card{background:#fff;border:2px solid var(--rule-strong);padding:22px;margin-bottom:20px;border-radius:18px}.settle-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:2px dashed var(--rule);padding-bottom:12px}.settle-name{font-size:19px}.seal-total{display:flex;align-items:center;justify-content:center;flex-direction:column;width:82px;height:82px;border-radius:50%;border:3px solid var(--gold);background:#FFF6DD}.seal-total .amt{font-size:15px;color:#B8860B}.seal-total .lbl{font-size:9px;color:var(--ink-soft)}table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;color:var(--ink-soft);font-size:11px;border-bottom:2px solid var(--rule-strong);padding:6px 8px}td{padding:8px;border-bottom:1px solid var(--rule)}td.amt{text-align:right;color:#B8860B}.empty-note{color:var(--ink-soft);font-size:13px;padding:20px 0;text-align:center}.footer-note{text-align:center;color:var(--ink-soft);font-size:11px;margin-top:30px}
+@media(max-width:600px){body{padding:16px 12px 50px}.ledger-header h1{font-size:22px}.cal-nav{flex-wrap:wrap;gap:8px}.month-label{width:100%;text-align:center;font-size:17px}.nav-btns{width:100%;justify-content:center}.cal-weekdays div{font-size:10px;padding:6px 0}.cal-cell{min-height:60px;padding:3px}.chip{font-size:9px;padding:2px 5px}.row2{grid-template-columns:1fr}.overlay{padding:20px 10px}.panel{padding:18px}.day-job-item{flex-direction:column}.settle-controls{flex-direction:column;align-items:stretch}.export-btn{width:100%}}
+</style>
+
+<style>
+/* ===== Money Forever iPhone V2 ===== */
+@media (max-width:600px){
+  .overlay{
+    padding:12px 8px;
+    align-items:flex-start;
+  }
+  .panel{
+    padding:18px 18px 22px;
+    border-radius:18px;
+    max-height:calc(100dvh - 24px);
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  .panel h2{font-size:20px;}
+  .panel-sub{margin-bottom:14px;}
+
+  .type-toggle{gap:8px;margin-bottom:14px;}
+  .type-btn{padding:10px 4px;}
+
+  .field{margin-bottom:12px;}
+  .field label{margin-bottom:5px;}
+
+  /* Prevent iOS native date/time controls from becoming giant blocks */
+  .field input[type="text"],
+  .field input[type="number"],
+  .field input[type="date"],
+  .field input[type="time"]{
+    height:44px;
+    min-height:44px;
+    padding:7px 10px;
+    line-height:1.2;
+    font-size:16px;
+    border-radius:10px;
+    appearance:none;
+    -webkit-appearance:none;
+  }
+
+  .field input[type="date"],
+  .field input[type="time"]{
+    text-align:center;
+    background:#fff;
+  }
+
+  .field input[type="date"]::-webkit-date-and-time-value,
+  .field input[type="time"]::-webkit-date-and-time-value{
+    text-align:center;
+    min-height:1.2em;
+  }
+
+  /* Date + note remain one-column; start/end time sit side by side */
+  #jobTimeFields.row2{
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+    gap:8px;
+  }
+  #jobTimeFields .field{min-width:0;}
+
+  .person-block{
+    padding:11px 12px;
+    margin-bottom:9px;
+    border-radius:13px;
+  }
+  .person-head{margin-bottom:6px;}
+  .paytype-radios{margin-bottom:6px;}
+  .person-block > input[type="number"]{
+    height:40px;
+    min-height:40px;
+    padding:6px 9px;
+    font-size:16px;
+  }
+
+  .save-btn{
+    position:sticky;
+    bottom:0;
+    z-index:4;
+    margin-top:10px;
+    padding:12px;
+    box-shadow:0 -8px 18px rgba(255,255,255,.92);
+  }
+  .cancel-btn{margin-bottom:4px;}
+
+  /* iPhone safe area */
+  .panel{padding-bottom:max(22px, env(safe-area-inset-bottom));}
+}
+</style>
+
+
+<style>
+@media (max-width:600px){
+  .save-btn{position:static!important;bottom:auto!important;z-index:auto!important;box-shadow:none!important;margin-top:8px!important}
+  .panel{padding-top:16px}
+  .panel-sub{margin-bottom:12px}
+  .type-toggle{margin-bottom:12px}
+  .field{margin-bottom:10px}
+  .person-block{padding:10px 12px;margin-bottom:8px}
+  .person-head{margin-bottom:5px}
+  .paytype-radios{margin-bottom:5px}
+}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+<div class="ledger-header"><div><h1>Money Forever</h1><div class="sub">鳳雪　·　忠村　共用班表與薪資帳本</div></div></div>
+<div class="tabs"><button class="tab-btn active" data-tab="cal">月曆</button><button class="tab-btn" data-tab="settle">月結算</button></div>
+<div class="view active" id="view-cal"><div class="cal-nav"><div class="month-label" id="monthLabel"></div><div class="nav-btns"><button id="prevMonth">‹ 上月</button><button class="today-btn" id="gotoToday">今天</button><button id="nextMonth">下月 ›</button></div></div><div class="calendar"><div class="cal-weekdays"><div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div></div><div class="cal-grid" id="calGrid"></div></div></div>
+<div class="view" id="view-settle"><div class="settle-controls"><div class="field"><label>月份</label><select id="settleMonth"></select></div><div class="field"><label>人員</label><select id="settlePerson"><option value="all">全部</option><option>鳳雪</option><option>忠村</option></select></div><button class="export-btn" id="exportCsv">匯出 CSV</button><button class="export-btn" id="importCsvBtn">匯入 CSV</button><input type="file" id="importCsvFile" accept=".csv" style="display:none"></div><div id="settleResults"></div></div>
+<div class="footer-note">資料儲存在目前這台裝置的瀏覽器中；建議定期匯出 CSV 備份</div></div>
+<div class="overlay" id="dayOverlay"><div class="panel"><button class="close-x" id="closeDayPanel">✕</button><h2 id="dayPanelTitle"></h2><div class="panel-sub">當天的工作與行程</div><div id="dayJobList"></div><button class="add-job-btn" id="openAddJob">＋　新增工作</button><button class="add-note-btn" id="openAddNote">＋　新增一般行程</button></div></div>
+<div class="overlay" id="formOverlay"><div class="panel"><button class="close-x" id="closeFormPanel">✕</button><h2 id="formTitle">新增工作</h2><div class="panel-sub">填寫工作內容與各人員薪資設定</div><div id="overlapWarning" class="warn-box" style="display:none"></div><div class="type-toggle"><button type="button" class="type-btn active" data-type="job">工作</button><button type="button" class="type-btn" data-type="note">一般行程</button></div>
+<div class="field"><label id="nameLabel">工作名稱</label><input type="text" id="f-name"></div><div class="row2"><div class="field"><label id="dateLabel">日期</label><input type="date" id="f-date"></div><div class="field"><label>備註</label><input type="text" id="f-note"></div></div>
+<div id="jobTimeFields" class="row2"><div class="field"><label>開始時間</label><input type="time" id="f-start" value="09:00"></div><div class="field"><label>結束時間</label><input type="time" id="f-end" value="17:00"></div></div>
+<div id="noteTimeFields" style="display:none"><div class="field"><label>結束日期（單天可留空）</label><input type="date" id="f-enddate"></div><div class="field"><label><input type="checkbox" id="f-allday" style="width:auto"> 全天</label></div><div class="field" id="noteTimeWrap"><label>時間</label><input type="time" id="f-notetime" value="09:00"></div></div>
+<div id="jobPeopleFields">
+<div class="person-block disabled" id="block-鳳雪"><div class="person-head"><input type="checkbox" id="chk-鳳雪"><span>鳳雪</span></div><div class="paytype-radios"><label><input type="radio" name="pay-鳳雪" value="daily" checked>日薪</label><label><input type="radio" name="pay-鳳雪" value="hourly">時薪</label></div><input type="number" id="rate-鳳雪" placeholder="金額" min="0"></div>
+<div class="person-block disabled" id="block-忠村"><div class="person-head"><input type="checkbox" id="chk-忠村"><span>忠村</span></div><div class="paytype-radios"><label><input type="radio" name="pay-忠村" value="daily" checked>日薪</label><label><input type="radio" name="pay-忠村" value="hourly">時薪</label></div><input type="number" id="rate-忠村" placeholder="金額" min="0"></div></div>
+<button class="save-btn" id="saveJob">儲　存</button><button class="cancel-btn" id="cancelForm">取消</button></div></div>
+<script>
+const PEOPLE=['鳳雪','忠村'], STORAGE_KEY='money-forever-jobs-v1'; let jobs=[], currentView=new Date(), editingId=null, activeDayKey=null, currentFormType='job'; currentView.setDate(1);
+function loadJobs(){try{jobs=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]')}catch(e){jobs=[]}}
+function saveJobs(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(jobs));return true}catch(e){alert('儲存失敗。請確認 Safari 沒有使用無痕瀏覽，並保留足夠儲存空間。');return false}}
+const pad=n=>String(n).padStart(2,'0'), dateKey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`, esc=s=>{const d=document.createElement('div');d.textContent=s||'';return d.innerHTML}, mins=t=>{let [h,m]=t.split(':').map(Number);return h*60+m};
+function hoursBetween(s,e){let a=mins(s),b=mins(e);if(b<=a)b+=1440;return(b-a)/60} function amountFor(j,p){if(j.type==='note')return 0;let a=(j.assignments||[]).find(x=>x.person===p);return !a?0:a.payType==='daily'?Number(a.rate)||0:hoursBetween(j.start,j.end)*(Number(a.rate)||0)}
+function uid(){return'j'+Date.now()+Math.random().toString(36).slice(2,7)}
+function renderCalendar(){monthLabel.textContent=`${currentView.getFullYear()} 年 ${currentView.getMonth()+1} 月`;calGrid.innerHTML='';let y=currentView.getFullYear(),m=currentView.getMonth(),off=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate(),prev=new Date(y,m,0).getDate(),cells=[];for(let i=off-1;i>=0;i--)cells.push({d:prev-i,o:1,x:new Date(y,m-1,prev-i)});for(let d=1;d<=days;d++)cells.push({d,o:0,x:new Date(y,m,d)});while(cells.length<42){let n=cells.length-(off+days)+1;cells.push({d:n,o:1,x:new Date(y,m+1,n)})}cells.forEach(c=>{let el=document.createElement('div'),k=dateKey(c.x);el.className='cal-cell'+(c.o?' other-month':'')+(dateKey(new Date())===k?' today':'');let js=jobs.filter(j=>j.type==='note'?k>=j.date&&k<=(j.endDate||j.date):j.date===k);el.innerHTML=`<div class="daynum">${c.d}</div><div class="chip-list">${js.slice(0,3).map(j=>`<div class="chip ${j.type==='note'?'p-note':j.assignments.length>1?'p-both':'p-'+j.assignments[0].person}">${esc(j.name)}</div>`).join('')}${js.length>3?`<div class="chip">+${js.length-3} 筆</div>`:''}</div>`;el.onclick=()=>openDay(k);calGrid.appendChild(el)})}
+function openDay(k){activeDayKey=k;dayPanelTitle.textContent=k.replaceAll('-','/');renderDay();dayOverlay.classList.add('active')}
+function renderDay(){let js=jobs.filter(j=>j.type==='note'?activeDayKey>=j.date&&activeDayKey<=(j.endDate||j.date):j.date===activeDayKey);dayJobList.innerHTML=js.length?'':'<div class="empty-note">這天還沒有安排工作或行程</div>';js.forEach(j=>{let el=document.createElement('div');el.className='day-job-item';let detail=j.type==='note'?(j.allDay?'全天':j.time||''):(j.start+' – '+j.end);el.innerHTML=`<div class="info"><div class="jname">${esc(j.name)}</div><div class="jtime">${detail}${j.note?' · '+esc(j.note):''}</div><div class="jpeople">${j.type==='note'?'<span class="tag p-note">一般行程</span>':j.assignments.map(a=>`<span class="tag p-${a.person}">${a.person}｜${a.payType==='daily'?'日薪':'時薪'} ${a.rate}｜$${Math.round(amountFor(j,a.person)).toLocaleString()}</span>`).join('')}</div></div><div class="job-actions"><button class="icon-btn edit">編輯</button><button class="icon-btn del">刪除</button></div>`;el.querySelector('.edit').onclick=()=>openForm(j.id);el.querySelector('.del').onclick=()=>{if(confirm('確定要刪除這筆資料嗎？')){jobs=jobs.filter(x=>x.id!==j.id);saveJobs();renderDay();renderCalendar()}};dayJobList.appendChild(el)})}
+function setType(t){currentFormType=t;document.querySelectorAll('.type-btn').forEach(b=>b.classList.toggle('active',b.dataset.type===t));jobTimeFields.style.display=t==='job'?'grid':'none';noteTimeFields.style.display=t==='note'?'block':'none';jobPeopleFields.style.display=t==='job'?'block':'none';nameLabel.textContent=t==='job'?'工作名稱':'行程名稱';dateLabel.textContent=t==='job'?'日期':'起始日期'}
+function reset(t='job'){f('name').value='';f('date').value=activeDayKey||dateKey(new Date());f('note').value='';f('start').value='09:00';f('end').value='17:00';f('enddate').value=activeDayKey||dateKey(new Date());f('allday').checked=false;f('notetime').value='09:00';PEOPLE.forEach(p=>{document.getElementById('chk-'+p).checked=false;document.getElementById('rate-'+p).value='';document.getElementById('block-'+p).classList.add('disabled')});setType(t)}
+function f(x){return document.getElementById('f-'+x)}
+function openForm(id=null,t='job'){editingId=id;reset(t);if(id){let j=jobs.find(x=>x.id===id);setType(j.type);formTitle.textContent='編輯'+(j.type==='note'?'一般行程':'工作');f('name').value=j.name;f('date').value=j.date;f('note').value=j.note||'';if(j.type==='note'){f('enddate').value=j.endDate||j.date;f('allday').checked=!!j.allDay;f('notetime').value=j.time||'09:00'}else{f('start').value=j.start;f('end').value=j.end;j.assignments.forEach(a=>{document.getElementById('chk-'+a.person).checked=true;document.getElementById('block-'+a.person).classList.remove('disabled');document.querySelector(`input[name="pay-${a.person}"][value="${a.payType}"]`).checked=true;document.getElementById('rate-'+a.person).value=a.rate})}}else formTitle.textContent='新增'+(t==='note'?'一般行程':'工作');dayOverlay.classList.remove('active');formOverlay.classList.add('active')}
+function handleSave(){let name=f('name').value.trim(),date=f('date').value,note=f('note').value.trim();if(!name||!date){alert('請填寫名稱與日期');return}let r;if(currentFormType==='note'){let endDate=f('enddate').value||date;if(endDate<date){alert('結束日期不能早於起始日期');return}r={type:'note',name,date,endDate,note,allDay:f('allday').checked,time:f('allday').checked?'':f('notetime').value}}else{let as=[];PEOPLE.forEach(p=>{if(document.getElementById('chk-'+p).checked)as.push({person:p,payType:document.querySelector(`input[name="pay-${p}"]:checked`).value,rate:Number(document.getElementById('rate-'+p).value)||0})});if(!as.length){alert('請至少選擇一位人員');return}r={type:'job',name,date,start:f('start').value,end:f('end').value,note,assignments:as}}if(editingId){let i=jobs.findIndex(j=>j.id===editingId);jobs[i]={...jobs[i],...r}}else jobs.push({id:uid(),...r});if(saveJobs()){formOverlay.classList.remove('active');renderCalendar();activeDayKey=date;openDay(date)}}
+function populateMonths(){let s=new Set(jobs.map(j=>j.date.slice(0,7)));let n=new Date();s.add(`${n.getFullYear()}-${pad(n.getMonth()+1)}`);settleMonth.innerHTML=[...s].sort().reverse().map(m=>`<option value="${m}">${m.slice(0,4)} 年 ${Number(m.slice(5))} 月</option>`).join('')}
+function renderSettlement(){let m=settleMonth.value,ps=settlePerson.value==='all'?PEOPLE:[settlePerson.value];settleResults.innerHTML='';ps.forEach(p=>{let js=jobs.filter(j=>j.type==='job'&&j.date.startsWith(m)&&(j.assignments||[]).some(a=>a.person===p)),tot=js.reduce((s,j)=>s+amountFor(j,p),0),card=document.createElement('div');card.className='settle-card';card.innerHTML=`<div class="settle-card-head"><div class="settle-name">${p}</div><div class="seal-total"><div class="amt">$${Math.round(tot).toLocaleString()}</div><div class="lbl">本月應領</div></div></div>${js.length?`<table><thead><tr><th>日期</th><th>工作</th><th>方式</th><th class="amt">金額</th></tr></thead><tbody>${js.sort((a,b)=>a.date.localeCompare(b.date)).map(j=>{let a=j.assignments.find(x=>x.person===p);return`<tr><td>${j.date.slice(5).replace('-','/')}</td><td>${esc(j.name)}</td><td>${a.payType==='daily'?'日薪':'時薪'}</td><td class="amt">$${Math.round(amountFor(j,p)).toLocaleString()}</td></tr>`}).join('')}</tbody></table>`:'<div class="empty-note">這個月尚無工作記錄</div>'}`;settleResults.appendChild(card)})}
+function exportCsv(){let rows=[['日期','名稱','開始','結束','人員','計薪方式','費率','金額','備註','類型']];jobs.forEach(j=>{if(j.type==='note')rows.push([j.date,j.name,j.allDay?'全天':j.time,j.endDate||j.date,'','','','',j.note||'','一般行程']);else j.assignments.forEach(a=>rows.push([j.date,j.name,j.start,j.end,a.person,a.payType==='daily'?'日薪':'時薪',a.rate,Math.round(amountFor(j,a.person)),j.note||'','工作']))});let csv='\uFEFF'+rows.map(r=>r.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(',')).join('\n'),blob=new Blob([csv],{type:'text/csv'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='MoneyForever_Backup.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+function parseLine(l){let r=[],c='',q=false;for(let i=0;i<l.length;i++){let x=l[i];if(q){if(x==='"'&&l[i+1]==='"'){c+='"';i++}else if(x==='"')q=false;else c+=x}else if(x==='"')q=true;else if(x===','){r.push(c);c=''}else c+=x}r.push(c);return r}
+async function importCsv(file){let text=(await file.text()).replace(/^\uFEFF/,''),rows=text.split(/\r?\n/).filter(Boolean).slice(1).map(parseLine),map=new Map(),notes=[];rows.forEach(r=>{let[date,name,start,end,person,pay,rate,amt,note,type]=r;if(!date)return;if(type==='一般行程')notes.push({id:uid(),type:'note',name,date,endDate:end||date,note:note||'',allDay:start==='全天',time:start==='全天'?'':start});else if(person){let k=[date,name,start,end].join('|');if(!map.has(k))map.set(k,{id:uid(),type:'job',name,date,start,end,note:note||'',assignments:[]});map.get(k).assignments.push({person,payType:pay==='日薪'?'daily':'hourly',rate:Number(rate)||0})}});let x=[...map.values(),...notes];if(x.length&&confirm(`讀到 ${x.length} 筆資料，要新增進目前資料嗎？`)){jobs.push(...x);saveJobs();renderCalendar();populateMonths();renderSettlement();alert('匯入完成！')}}
+document.querySelectorAll('.tab-btn').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab-btn,.view').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById('view-'+b.dataset.tab).classList.add('active');if(b.dataset.tab==='settle'){populateMonths();renderSettlement()}});document.querySelectorAll('.type-btn').forEach(b=>b.onclick=()=>setType(b.dataset.type));PEOPLE.forEach(p=>document.getElementById('chk-'+p).onchange=e=>document.getElementById('block-'+p).classList.toggle('disabled',!e.target.checked));
+prevMonth.onclick=()=>{currentView.setMonth(currentView.getMonth()-1);renderCalendar()};nextMonth.onclick=()=>{currentView.setMonth(currentView.getMonth()+1);renderCalendar()};gotoToday.onclick=()=>{currentView=new Date();currentView.setDate(1);renderCalendar()};closeDayPanel.onclick=()=>dayOverlay.classList.remove('active');closeFormPanel.onclick=cancelForm.onclick=()=>formOverlay.classList.remove('active');openAddJob.onclick=()=>openForm();openAddNote.onclick=()=>openForm(null,'note');saveJob.onclick=handleSave;settleMonth.onchange=settlePerson.onchange=renderSettlement;exportCsv.onclick=exportCsv;importCsvBtn.onclick=()=>importCsvFile.click();importCsvFile.onchange=e=>{if(e.target.files[0])importCsv(e.target.files[0]);e.target.value=''};f('allday').onchange=e=>noteTimeWrap.style.display=e.target.checked?'none':'block';
+loadJobs();renderCalendar();
+</script>
+</body></html>
