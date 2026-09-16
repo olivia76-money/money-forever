@@ -22,104 +22,113 @@
 @media(max-width:600px){body{padding:16px 12px 50px}.ledger-header h1{font-size:22px}.cal-nav{flex-wrap:wrap;gap:8px}.month-label{width:100%;text-align:center;font-size:17px}.nav-btns{width:100%;justify-content:center}.cal-weekdays div{font-size:10px;padding:6px 0}.cal-cell{min-height:60px;padding:3px}.chip{font-size:9px;padding:2px 5px}.row2{grid-template-columns:1fr}.overlay{padding:20px 10px}.panel{padding:18px}.day-job-item{flex-direction:column}.settle-controls{flex-direction:column;align-items:stretch}.export-btn{width:100%}}
 </style>
 
+
 <style>
-/* ===== Money Forever iPhone V2 ===== */
+/* ===== Money Forever iPhone V4 — consolidated mobile layout ===== */
 @media (max-width:600px){
+  body{padding:16px 12px 50px;}
+
   .overlay{
-    padding:12px 8px;
-    align-items:flex-start;
-  }
-  .panel{
-    padding:18px 18px 22px;
-    border-radius:18px;
-    max-height:calc(100dvh - 24px);
-    overflow-y:auto;
+    padding:12px 8px !important;
+    align-items:flex-start !important;
+    overflow-y:auto !important;
     -webkit-overflow-scrolling:touch;
   }
-  .panel h2{font-size:20px;}
-  .panel-sub{margin-bottom:14px;}
 
-  .type-toggle{gap:8px;margin-bottom:14px;}
-  .type-btn{padding:10px 4px;}
+  .panel{
+    width:100% !important;
+    max-width:520px !important;
+    max-height:calc(100dvh - 24px) !important;
+    overflow-y:auto !important;
+    -webkit-overflow-scrolling:touch;
+    padding:16px 18px max(22px, env(safe-area-inset-bottom)) !important;
+    border-radius:18px !important;
+  }
 
-  .field{margin-bottom:12px;}
-  .field label{margin-bottom:5px;}
+  .panel h2{font-size:20px !important;}
+  .panel-sub{margin-bottom:12px !important;}
+  .type-toggle{gap:8px !important;margin-bottom:12px !important;}
+  .type-btn{padding:10px 4px !important;}
 
-  /* Prevent iOS native date/time controls from becoming giant blocks */
+  .field{margin-bottom:10px !important;}
+  .field label{margin-bottom:5px !important;}
+
+  /* General two-column rows become one column on phone */
+  .row2{grid-template-columns:1fr !important;}
+
+  /* Work start/end time is the exception: keep both on the same row */
+  #jobTimeFields.row2{
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+    gap:8px !important;
+  }
+
   .field input[type="text"],
   .field input[type="number"],
   .field input[type="date"],
   .field input[type="time"]{
-    height:44px;
-    min-height:44px;
-    padding:7px 10px;
-    line-height:1.2;
-    font-size:16px;
-    border-radius:10px;
-    appearance:none;
-    -webkit-appearance:none;
+    width:100% !important;
+    height:44px !important;
+    min-height:44px !important;
+    padding:7px 10px !important;
+    line-height:1.2 !important;
+    font-size:16px !important;
+    border-radius:10px !important;
+    box-sizing:border-box !important;
   }
 
   .field input[type="date"],
   .field input[type="time"]{
-    text-align:center;
-    background:#fff;
+    text-align:center !important;
+    background:#fff !important;
+    -webkit-appearance:none;
+    appearance:none;
   }
 
   .field input[type="date"]::-webkit-date-and-time-value,
   .field input[type="time"]::-webkit-date-and-time-value{
-    text-align:center;
+    text-align:center !important;
     min-height:1.2em;
   }
 
-  /* Date + note remain one-column; start/end time sit side by side */
-  #jobTimeFields.row2{
-    display:grid !important;
-    grid-template-columns:1fr 1fr !important;
-    gap:8px;
-  }
-  #jobTimeFields .field{min-width:0;}
-
   .person-block{
-    padding:11px 12px;
-    margin-bottom:9px;
-    border-radius:13px;
+    padding:10px 12px !important;
+    margin-bottom:8px !important;
+    border-radius:13px !important;
   }
-  .person-head{margin-bottom:6px;}
-  .paytype-radios{margin-bottom:6px;}
+  .person-head{margin-bottom:5px !important;}
+  .paytype-radios{margin-bottom:5px !important;}
+
   .person-block > input[type="number"]{
-    height:40px;
-    min-height:40px;
-    padding:6px 9px;
-    font-size:16px;
+    width:100% !important;
+    height:40px !important;
+    min-height:40px !important;
+    padding:6px 9px !important;
+    font-size:16px !important;
+    box-sizing:border-box !important;
   }
 
+  /* Critical V4 fix: button is part of the form, never floating/sticky */
   .save-btn{
-    position:sticky;
-    bottom:0;
-    z-index:4;
-    margin-top:10px;
-    padding:12px;
-    box-shadow:0 -8px 18px rgba(255,255,255,.92);
+    position:relative !important;
+    inset:auto !important;
+    bottom:auto !important;
+    left:auto !important;
+    right:auto !important;
+    z-index:1 !important;
+    display:block !important;
+    width:100% !important;
+    margin:12px 0 0 !important;
+    padding:12px !important;
+    box-shadow:none !important;
   }
-  .cancel-btn{margin-bottom:4px;}
 
-  /* iPhone safe area */
-  .panel{padding-bottom:max(22px, env(safe-area-inset-bottom));}
-}
-</style>
-
-
-<style>
-@media (max-width:600px){
-  .save-btn{position:static!important;bottom:auto!important;z-index:auto!important;box-shadow:none!important;margin-top:8px!important}
-  .panel{padding-top:16px}
-  .panel-sub{margin-bottom:12px}
-  .type-toggle{margin-bottom:12px}
-  .field{margin-bottom:10px}
-  .person-block{padding:10px 12px;margin-bottom:8px}
-  .person-head{margin-bottom:5px}
-  .paytype-radios{margin-bottom:5px}
+  .cancel-btn{
+    position:relative !important;
+    display:block !important;
+    width:100% !important;
+    margin:8px 0 4px !important;
+  }
 }
 </style>
 
