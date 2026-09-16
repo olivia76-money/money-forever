@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Money Forever">
 <title>Money Forever</title>
+<meta name="money-forever-version" content="V5-structural-fix">
 <style>
 :root{--paper:#FFF7E6;--paper-card:#FFF;--paper-dark:#FFEFC4;--ink:#241F42;--ink-soft:#746D9C;--rule:#F2DFA3;--rule-strong:#F0C24B;--seal:#F0428C;--seal-soft:#F0428C22;--teal:#06A77D;--teal-soft:#06A77D22;--gold:#FFB400;--note:#2F6FED;--note-soft:#2F6FED22;--danger:#E63946;--font-main:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif}
 *{box-sizing:border-box}html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);font-family:var(--font-main);font-weight:700;overflow-x:hidden;min-height:100%}body{padding:24px 20px 60px;min-height:100vh}.wrap{max-width:960px;margin:auto}
@@ -132,6 +133,29 @@
 }
 </style>
 
+
+<style>
+/* Money Forever V5 structural iPhone fix */
+.form-footer{display:block;position:static;width:100%;clear:both}
+@media (max-width:600px){
+ #formOverlay{align-items:flex-start!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;padding:12px 8px!important}
+ #formOverlay .panel{display:block!important;position:relative!important;width:100%!important;max-width:520px!important;height:auto!important;max-height:none!important;overflow:visible!important;padding:16px 18px calc(24px + env(safe-area-inset-bottom))!important}
+ #formOverlay .row2{grid-template-columns:1fr!important}
+ #formOverlay #jobTimeFields.row2{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:8px!important}
+ #formOverlay .field{margin-bottom:10px!important}
+ #formOverlay .type-toggle{margin-bottom:12px!important}
+ #formOverlay .native-picker-display{height:44px!important;min-height:44px!important;padding:7px 10px!important;justify-content:center!important;font-size:16px!important}
+ #formOverlay .person-block{display:block!important;position:relative!important;padding:10px 12px!important;margin:0 0 10px!important;min-height:0!important}
+ #formOverlay .person-head{margin-bottom:5px!important}
+ #formOverlay .paytype-radios{margin-bottom:6px!important}
+ #formOverlay .person-block>input[type=number]{display:block!important;position:static!important;width:100%!important;height:40px!important;min-height:40px!important;margin:0!important;padding:6px 9px!important;box-sizing:border-box!important}
+ #formOverlay .form-footer{display:block!important;position:static!important;inset:auto!important;width:100%!important;height:auto!important;clear:both!important;transform:none!important;margin:12px 0 0!important;padding:0!important;z-index:auto!important}
+ #formOverlay #saveJob,#formOverlay #cancelForm{display:block!important;position:static!important;inset:auto!important;float:none!important;transform:none!important;width:100%!important;max-width:none!important;z-index:auto!important}
+ #formOverlay #saveJob{margin:0 0 8px!important;padding:12px!important;box-shadow:none!important}
+ #formOverlay #cancelForm{margin:0!important}
+}
+</style>
+
 </head>
 <body>
 <div class="wrap">
@@ -148,7 +172,10 @@
 <div id="jobPeopleFields">
 <div class="person-block disabled" id="block-鳳雪"><div class="person-head"><input type="checkbox" id="chk-鳳雪"><span>鳳雪</span></div><div class="paytype-radios"><label><input type="radio" name="pay-鳳雪" value="daily" checked>日薪</label><label><input type="radio" name="pay-鳳雪" value="hourly">時薪</label></div><input type="number" id="rate-鳳雪" placeholder="金額" min="0"></div>
 <div class="person-block disabled" id="block-忠村"><div class="person-head"><input type="checkbox" id="chk-忠村"><span>忠村</span></div><div class="paytype-radios"><label><input type="radio" name="pay-忠村" value="daily" checked>日薪</label><label><input type="radio" name="pay-忠村" value="hourly">時薪</label></div><input type="number" id="rate-忠村" placeholder="金額" min="0"></div></div>
-<button class="save-btn" id="saveJob">儲　存</button><button class="cancel-btn" id="cancelForm">取消</button></div></div>
+    <div class="form-footer" id="formFooter">
+      <button class="save-btn" id="saveJob">儲　存</button>
+      <button class="cancel-btn" id="cancelForm">取消</button>
+    </div></div></div>
 <script>
 const PEOPLE=['鳳雪','忠村'], STORAGE_KEY='money-forever-jobs-v1'; let jobs=[], currentView=new Date(), editingId=null, activeDayKey=null, currentFormType='job'; currentView.setDate(1);
 function loadJobs(){try{jobs=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]')}catch(e){jobs=[]}}
