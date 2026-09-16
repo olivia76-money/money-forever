@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Money Forever">
 <title>Money Forever</title>
-<meta name="money-forever-version" content="V6-supabase-cloud">
+<meta name="money-forever-version" content="V6.2-settlement-colors">
 <style>
 :root{--paper:#FFF7E6;--paper-card:#FFF;--paper-dark:#FFEFC4;--ink:#241F42;--ink-soft:#746D9C;--rule:#F2DFA3;--rule-strong:#F0C24B;--seal:#F0428C;--seal-soft:#F0428C22;--teal:#06A77D;--teal-soft:#06A77D22;--gold:#FFB400;--note:#2F6FED;--note-soft:#2F6FED22;--danger:#E63946;--font-main:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif}
 *{box-sizing:border-box}html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);font-family:var(--font-main);font-weight:700;overflow-x:hidden;min-height:100%}body{padding:24px 20px 60px;min-height:100vh}.wrap{max-width:960px;margin:auto}
@@ -156,6 +156,19 @@
 }
 </style>
 
+
+<style>
+/* Money Forever V6.2 — actual settlement-name color fix */
+.settle-card[data-person="鳳雪"] .settle-name,
+.settle-name.鳳雪{
+  color:#C2222B !important;
+}
+.settle-card[data-person="忠村"] .settle-name,
+.settle-name.忠村{
+  color:#046651 !important;
+}
+</style>
+
 </head>
 <body>
 <div class="wrap">
@@ -234,7 +247,7 @@ function f(x){return document.getElementById('f-'+x)}
 function openForm(id=null,t='job'){editingId=id;reset(t);if(id){let j=jobs.find(x=>x.id===id);setType(j.type);formTitle.textContent='編輯'+(j.type==='note'?'一般行程':'工作');f('name').value=j.name;f('date').value=j.date;f('note').value=j.note||'';if(j.type==='note'){f('enddate').value=j.endDate||j.date;f('allday').checked=!!j.allDay;f('notetime').value=j.time||'09:00'}else{f('start').value=j.start;f('end').value=j.end;j.assignments.forEach(a=>{document.getElementById('chk-'+a.person).checked=true;document.getElementById('block-'+a.person).classList.remove('disabled');document.querySelector(`input[name="pay-${a.person}"][value="${a.payType}"]`).checked=true;document.getElementById('rate-'+a.person).value=a.rate})}}else formTitle.textContent='新增'+(t==='note'?'一般行程':'工作');dayOverlay.classList.remove('active');formOverlay.classList.add('active')}
 function handleSave(){let name=f('name').value.trim(),date=f('date').value,note=f('note').value.trim();if(!name||!date){alert('請填寫名稱與日期');return}let r;if(currentFormType==='note'){let endDate=f('enddate').value||date;if(endDate<date){alert('結束日期不能早於起始日期');return}r={type:'note',name,date,endDate,note,allDay:f('allday').checked,time:f('allday').checked?'':f('notetime').value}}else{let as=[];PEOPLE.forEach(p=>{if(document.getElementById('chk-'+p).checked)as.push({person:p,payType:document.querySelector(`input[name="pay-${p}"]:checked`).value,rate:Number(document.getElementById('rate-'+p).value)||0})});if(!as.length){alert('請至少選擇一位人員');return}r={type:'job',name,date,start:f('start').value,end:f('end').value,note,assignments:as}}if(editingId){let i=jobs.findIndex(j=>j.id===editingId);jobs[i]={...jobs[i],...r}}else jobs.push({id:uid(),...r});if(saveJobs()){formOverlay.classList.remove('active');renderCalendar();activeDayKey=date;openDay(date)}}
 function populateMonths(){let s=new Set(jobs.map(j=>j.date.slice(0,7)));let n=new Date();s.add(`${n.getFullYear()}-${pad(n.getMonth()+1)}`);settleMonth.innerHTML=[...s].sort().reverse().map(m=>`<option value="${m}">${m.slice(0,4)} 年 ${Number(m.slice(5))} 月</option>`).join('')}
-function renderSettlement(){let m=settleMonth.value,ps=settlePerson.value==='all'?PEOPLE:[settlePerson.value];settleResults.innerHTML='';ps.forEach(p=>{let js=jobs.filter(j=>j.type==='job'&&j.date.startsWith(m)&&(j.assignments||[]).some(a=>a.person===p)),tot=js.reduce((s,j)=>s+amountFor(j,p),0),card=document.createElement('div');card.className='settle-card';card.innerHTML=`<div class="settle-card-head"><div class="settle-name">${p}</div><div class="seal-total"><div class="amt">$${Math.round(tot).toLocaleString()}</div><div class="lbl">本月應領</div></div></div>${js.length?`<table><thead><tr><th>日期</th><th>工作</th><th>方式</th><th class="amt">金額</th></tr></thead><tbody>${js.sort((a,b)=>a.date.localeCompare(b.date)).map(j=>{let a=j.assignments.find(x=>x.person===p);return`<tr><td>${j.date.slice(5).replace('-','/')}</td><td>${esc(j.name)}</td><td>${a.payType==='daily'?'日薪':'時薪'}</td><td class="amt">$${Math.round(amountFor(j,p)).toLocaleString()}</td></tr>`}).join('')}</tbody></table>`:'<div class="empty-note">這個月尚無工作記錄</div>'}`;settleResults.appendChild(card)})}
+function renderSettlement(){let m=settleMonth.value,ps=settlePerson.value==='all'?PEOPLE:[settlePerson.value];settleResults.innerHTML='';ps.forEach(p=>{let js=jobs.filter(j=>j.type==='job'&&j.date.startsWith(m)&&(j.assignments||[]).some(a=>a.person===p)),tot=js.reduce((s,j)=>s+amountFor(j,p),0),card=document.createElement('div');card.className='settle-card';card.dataset.person=p;card.innerHTML=`<div class="settle-card-head"><div class="settle-name ${p}">${p}</div><div class="seal-total"><div class="amt">$${Math.round(tot).toLocaleString()}</div><div class="lbl">本月應領</div></div></div>${js.length?`<table><thead><tr><th>日期</th><th>工作</th><th>方式</th><th class="amt">金額</th></tr></thead><tbody>${js.sort((a,b)=>a.date.localeCompare(b.date)).map(j=>{let a=j.assignments.find(x=>x.person===p);return`<tr><td>${j.date.slice(5).replace('-','/')}</td><td>${esc(j.name)}</td><td>${a.payType==='daily'?'日薪':'時薪'}</td><td class="amt">$${Math.round(amountFor(j,p)).toLocaleString()}</td></tr>`}).join('')}</tbody></table>`:'<div class="empty-note">這個月尚無工作記錄</div>'}`;settleResults.appendChild(card)})}
 function exportCsv(){let rows=[['日期','名稱','開始','結束','人員','計薪方式','費率','金額','備註','類型']];jobs.forEach(j=>{if(j.type==='note')rows.push([j.date,j.name,j.allDay?'全天':j.time,j.endDate||j.date,'','','','',j.note||'','一般行程']);else j.assignments.forEach(a=>rows.push([j.date,j.name,j.start,j.end,a.person,a.payType==='daily'?'日薪':'時薪',a.rate,Math.round(amountFor(j,a.person)),j.note||'','工作']))});let csv='\uFEFF'+rows.map(r=>r.map(v=>`"${String(v??'').replaceAll('"','""')}"`).join(',')).join('\n'),blob=new Blob([csv],{type:'text/csv'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='MoneyForever_Backup.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 function parseLine(l){let r=[],c='',q=false;for(let i=0;i<l.length;i++){let x=l[i];if(q){if(x==='"'&&l[i+1]==='"'){c+='"';i++}else if(x==='"')q=false;else c+=x}else if(x==='"')q=true;else if(x===','){r.push(c);c=''}else c+=x}r.push(c);return r}
 async function importCsv(file){let text=(await file.text()).replace(/^\uFEFF/,''),rows=text.split(/\r?\n/).filter(Boolean).slice(1).map(parseLine),map=new Map(),notes=[];rows.forEach(r=>{let[date,name,start,end,person,pay,rate,amt,note,type]=r;if(!date)return;if(type==='一般行程')notes.push({id:uid(),type:'note',name,date,endDate:end||date,note:note||'',allDay:start==='全天',time:start==='全天'?'':start});else if(person){let k=[date,name,start,end].join('|');if(!map.has(k))map.set(k,{id:uid(),type:'job',name,date,start,end,note:note||'',assignments:[]});map.get(k).assignments.push({person,payType:pay==='日薪'?'daily':'hourly',rate:Number(rate)||0})}});let x=[...map.values(),...notes];if(x.length&&confirm(`讀到 ${x.length} 筆資料，要新增進目前資料嗎？`)){jobs.push(...x);saveJobs();renderCalendar();populateMonths();renderSettlement();alert('匯入完成！')}}
