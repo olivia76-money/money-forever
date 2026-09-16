@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Money Forever">
 <title>Money Forever</title>
-<meta name="money-forever-version" content="V5-structural-fix">
+<meta name="money-forever-version" content="V6-supabase-cloud">
 <style>
 :root{--paper:#FFF7E6;--paper-card:#FFF;--paper-dark:#FFEFC4;--ink:#241F42;--ink-soft:#746D9C;--rule:#F2DFA3;--rule-strong:#F0C24B;--seal:#F0428C;--seal-soft:#F0428C22;--teal:#06A77D;--teal-soft:#06A77D22;--gold:#FFB400;--note:#2F6FED;--note-soft:#2F6FED22;--danger:#E63946;--font-main:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif}
 *{box-sizing:border-box}html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);font-family:var(--font-main);font-weight:700;overflow-x:hidden;min-height:100%}body{padding:24px 20px 60px;min-height:100vh}.wrap{max-width:960px;margin:auto}
@@ -178,8 +178,50 @@
     </div></div></div>
 <script>
 const PEOPLE=['鳳雪','忠村'], STORAGE_KEY='money-forever-jobs-v1'; let jobs=[], currentView=new Date(), editingId=null, activeDayKey=null, currentFormType='job'; currentView.setDate(1);
-function loadJobs(){try{jobs=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]')}catch(e){jobs=[]}}
-function saveJobs(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(jobs));return true}catch(e){alert('儲存失敗。請確認 Safari 沒有使用無痕瀏覽，並保留足夠儲存空間。');return false}}
+const SUPABASE_URL='https://rlyiysopaweeibmdsgiq.supabase.co', SUPABASE_KEY='sb_publishable_OdmyoaJ3UJ_0M27heF9c-Q_hBcOBDQH', CLOUD_URL=SUPABASE_URL+'/rest/v1/jobs';
+
+async function loadJobs(){
+  let local=[];
+  try{local=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]')}catch(e){}
+  try{
+    const r=await fetch(CLOUD_URL+'?select=id,data&id=eq.1',{headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY}});
+    if(!r.ok)throw new Error(await r.text());
+    const rows=await r.json();
+    if(rows.length && Array.isArray(rows[0].data)){
+      jobs=rows[0].data;
+      localStorage.setItem(STORAGE_KEY,JSON.stringify(jobs));
+    }else{
+      jobs=Array.isArray(local)?local:[];
+      if(jobs.length) await cloudSave();
+    }
+  }catch(e){
+    console.error('雲端讀取失敗',e);
+    jobs=Array.isArray(local)?local:[];
+  }
+}
+async function cloudSave(){
+  const r=await fetch(CLOUD_URL+'?on_conflict=id',{
+    method:'POST',
+    headers:{
+      apikey:SUPABASE_KEY,
+      Authorization:'Bearer '+SUPABASE_KEY,
+      'Content-Type':'application/json',
+      Prefer:'resolution=merge-duplicates,return=minimal'
+    },
+    body:JSON.stringify({id:1,data:jobs})
+  });
+  if(!r.ok)throw new Error(await r.text());
+}
+function saveJobs(){
+  try{
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(jobs));
+    cloudSave().catch(e=>{console.error('雲端儲存失敗',e);alert('資料已暫存在此裝置，但雲端同步失敗。請確認網路後再試一次。')});
+    return true;
+  }catch(e){
+    alert('儲存失敗。請確認瀏覽器儲存空間。');
+    return false;
+  }
+}
 const pad=n=>String(n).padStart(2,'0'), dateKey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`, esc=s=>{const d=document.createElement('div');d.textContent=s||'';return d.innerHTML}, mins=t=>{let [h,m]=t.split(':').map(Number);return h*60+m};
 function hoursBetween(s,e){let a=mins(s),b=mins(e);if(b<=a)b+=1440;return(b-a)/60} function amountFor(j,p){if(j.type==='note')return 0;let a=(j.assignments||[]).find(x=>x.person===p);return !a?0:a.payType==='daily'?Number(a.rate)||0:hoursBetween(j.start,j.end)*(Number(a.rate)||0)}
 function uid(){return'j'+Date.now()+Math.random().toString(36).slice(2,7)}
@@ -198,6 +240,6 @@ function parseLine(l){let r=[],c='',q=false;for(let i=0;i<l.length;i++){let x=l[
 async function importCsv(file){let text=(await file.text()).replace(/^\uFEFF/,''),rows=text.split(/\r?\n/).filter(Boolean).slice(1).map(parseLine),map=new Map(),notes=[];rows.forEach(r=>{let[date,name,start,end,person,pay,rate,amt,note,type]=r;if(!date)return;if(type==='一般行程')notes.push({id:uid(),type:'note',name,date,endDate:end||date,note:note||'',allDay:start==='全天',time:start==='全天'?'':start});else if(person){let k=[date,name,start,end].join('|');if(!map.has(k))map.set(k,{id:uid(),type:'job',name,date,start,end,note:note||'',assignments:[]});map.get(k).assignments.push({person,payType:pay==='日薪'?'daily':'hourly',rate:Number(rate)||0})}});let x=[...map.values(),...notes];if(x.length&&confirm(`讀到 ${x.length} 筆資料，要新增進目前資料嗎？`)){jobs.push(...x);saveJobs();renderCalendar();populateMonths();renderSettlement();alert('匯入完成！')}}
 document.querySelectorAll('.tab-btn').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab-btn,.view').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById('view-'+b.dataset.tab).classList.add('active');if(b.dataset.tab==='settle'){populateMonths();renderSettlement()}});document.querySelectorAll('.type-btn').forEach(b=>b.onclick=()=>setType(b.dataset.type));PEOPLE.forEach(p=>document.getElementById('chk-'+p).onchange=e=>document.getElementById('block-'+p).classList.toggle('disabled',!e.target.checked));
 prevMonth.onclick=()=>{currentView.setMonth(currentView.getMonth()-1);renderCalendar()};nextMonth.onclick=()=>{currentView.setMonth(currentView.getMonth()+1);renderCalendar()};gotoToday.onclick=()=>{currentView=new Date();currentView.setDate(1);renderCalendar()};closeDayPanel.onclick=()=>dayOverlay.classList.remove('active');closeFormPanel.onclick=cancelForm.onclick=()=>formOverlay.classList.remove('active');openAddJob.onclick=()=>openForm();openAddNote.onclick=()=>openForm(null,'note');saveJob.onclick=handleSave;settleMonth.onchange=settlePerson.onchange=renderSettlement;exportCsv.onclick=exportCsv;importCsvBtn.onclick=()=>importCsvFile.click();importCsvFile.onchange=e=>{if(e.target.files[0])importCsv(e.target.files[0]);e.target.value=''};f('allday').onchange=e=>noteTimeWrap.style.display=e.target.checked?'none':'block';
-loadJobs();renderCalendar();
+(async()=>{await loadJobs();renderCalendar();})();
 </script>
 </body></html>
