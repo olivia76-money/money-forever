@@ -22,7 +22,7 @@ Future changes should start from THIS file.
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Money Forever">
 <title>Money Forever</title>
-<meta name="money-forever-version" content="MF-2026-09-29-LIVE-SYNC-MANUAL-UPDATE-V1">
+<meta name="money-forever-version" content="MF-2026-09-29-LIVESYNC-LEDGER-FIX1">
 <style>
 :root{--paper:#FFF7E6;--paper-card:#FFF;--paper-dark:#FFEFC4;--ink:#241F42;--ink-soft:#746D9C;--rule:#F2DFA3;--rule-strong:#F0C24B;--seal:#F0428C;--seal-soft:#F0428C22;--teal:#06A77D;--teal-soft:#06A77D22;--gold:#FFB400;--note:#2F6FED;--note-soft:#2F6FED22;--danger:#E63946;--font-main:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif}
 *{box-sizing:border-box}html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);font-family:var(--font-main);font-weight:700;overflow-x:hidden;min-height:100%}body{padding:24px 20px 60px;min-height:100vh}.wrap{max-width:960px;margin:auto}
@@ -323,8 +323,8 @@ function setLedgerMonth(v){ledgerMonth=v;localStorage.setItem(LEDGER_MONTH,v);re
 function moveLedgerMonth(n){let [y,m]=ledgerMonth.split('-').map(Number),d=new Date(y,m-1+n,1);setLedgerMonth(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`)}
 function renderLedger(){if(!ledgerMonth)ledgerMonth=localStorage.getItem(LEDGER_MONTH)||lToday().slice(0,7);let [y,m]=ledgerMonth.split('-');ledgerMonthTitle.textContent=`${+y}年${+m}月`;let a=ledger.filter(x=>(x.date||'').startsWith(ledgerMonth)),inc=a.filter(x=>x.type==='income').reduce((s,x)=>s+(+x.amount||0),0),exp=a.filter(x=>x.type==='expense').reduce((s,x)=>s+(+x.amount||0),0),bal=inc-exp;ledgerIncome.textContent=lMoney(inc);ledgerExpense.textContent=lMoney(exp);ledgerBalance.textContent=(bal<0?'-':'')+lMoney(bal);a.sort((x,z)=>(z.date||'').localeCompare(x.date||'')-(0));if(!a.length)ledgerList.innerHTML='<div class="ledger-empty">這個月還沒有記帳資料</div>';else{let last='',out='';a.forEach(x=>{if(x.date!==last){let p=x.date.split('-');out+=`<div class="ledger-day">${+p[1]}月${+p[2]}日</div>`;last=x.date}out+=`<div class="ledger-item" data-id="${lEsc(x.id)}"><div><b>${lEsc(x.category)}</b>${x.note?`<div class="note">${lEsc(x.note)}</div>`:''}</div><div class="amt ${x.type}">${x.type==='income'?'+':'-'}${lMoney(x.amount)}</div></div>`});ledgerList.innerHTML=out;ledgerList.querySelectorAll('.ledger-item').forEach(e=>e.onclick=()=>openLedger(e.dataset.id))}applyLedgerFold()}
 function setLedgerType(t,cat){ledgerType=t;ledgerExpenseBtn.classList.toggle('active',t==='expense');ledgerIncomeBtn.classList.toggle('active',t==='income');ledgerCategory.innerHTML=ledgerCats[t].map(x=>`<option>${lEsc(x)}</option>`).join('');if(cat&&ledgerCats[t].includes(cat))ledgerCategory.value=cat}
-function openLedger(id=null){ledgerEdit=id;let x=id!==null?ledger.find(v=>String(v.id)===String(id)):null;ledgerFormTitle.textContent=x?'修改記帳':'新增記帳';setLedgerType(x?.type||'expense',x?.category);ledgerDate.value=x?.date||lToday();ledgerAmount.value=x?.amount??'';ledgerNote.value=x?.note||'';ledgerEditActions.style.display=x?'grid':'none';cancelLedger.style.display=x?'none':'block';ledgerOverlay.classList.add('show')}
-function closeLedger(){ledgerOverlay.classList.remove('show');ledgerEdit=null}
+function openLedger(id=null){ledgerEdit=id;let x=id!==null?ledger.find(v=>String(v.id)===String(id)):null;ledgerFormTitle.textContent=x?'修改記帳':'新增記帳';setLedgerType(x?.type||'expense',x?.category);ledgerDate.value=x?.date||lToday();ledgerAmount.value=x?.amount??'';ledgerNote.value=x?.note||'';ledgerEditActions.style.display=x?'grid':'none';cancelLedger.style.display=x?'none':'block';ledgerOverlay.classList.add('active')}
+function closeLedger(){ledgerOverlay.classList.remove('active');ledgerEdit=null}
 function commitLedger(){let amt=+ledgerAmount.value;if(!ledgerDate.value)return alert('請選擇日期');if(!(amt>0))return alert('請輸入金額');let x={id:ledgerEdit??Date.now(),type:ledgerType,date:ledgerDate.value,category:ledgerCategory.value,amount:amt,note:ledgerNote.value.trim()},i=ledger.findIndex(v=>String(v.id)===String(ledgerEdit));if(i>=0)ledger[i]=x;else ledger.push(x);saveLedgerData();setLedgerMonth(x.date.slice(0,7));closeLedger()}
 function removeLedger(){if(ledgerEdit===null||!confirm('確定要刪除這筆記帳嗎？'))return;ledger=ledger.filter(x=>String(x.id)!==String(ledgerEdit));saveLedgerData();closeLedger();renderLedger()}
 ledgerPrev.onclick=()=>moveLedgerMonth(-1);ledgerNext.onclick=()=>moveLedgerMonth(1);addLedger.onclick=()=>openLedger();ledgerHead.onclick=toggleLedger;ledgerExpenseBtn.onclick=()=>setLedgerType('expense');ledgerIncomeBtn.onclick=()=>setLedgerType('income');saveLedger.onclick=commitLedger;cancelLedger.onclick=closeLedger;cancelLedgerEdit.onclick=closeLedger;deleteLedger.onclick=removeLedger;ledgerOverlay.onclick=e=>{if(e.target===ledgerOverlay)closeLedger()};
@@ -369,7 +369,7 @@ async function syncVisibleData(){
   const tab=activeTabName();
   if(tab==='ledger')await syncLedgerFromCloud(); else await syncJobsFromCloud();
 }
-function hasOpenEditor(){return formOverlay.classList.contains('active')||ledgerOverlay.classList.contains('show')}
+function hasOpenEditor(){return formOverlay.classList.contains('active')||ledgerOverlay.classList.contains('active')}
 manualAppUpdate.onclick=()=>{
   if(hasOpenEditor()&&!confirm('目前有尚未儲存的內容，確定要更新程式嗎？'))return;
   const u=new URL(location.href);u.searchParams.set('_mf_refresh',Date.now().toString());location.replace(u.toString());
