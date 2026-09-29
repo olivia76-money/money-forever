@@ -22,7 +22,7 @@ Future changes should start from THIS file.
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Money Forever">
 <title>Money Forever</title>
-<meta name="money-forever-version" content="MF-2026-09-29-LIVESYNC-LEDGER-FIX1">
+<meta name="money-forever-version" content="MF-2026-09-29-SMOOTH-SYNC">
 <style>
 :root{--paper:#FFF7E6;--paper-card:#FFF;--paper-dark:#FFEFC4;--ink:#241F42;--ink-soft:#746D9C;--rule:#F2DFA3;--rule-strong:#F0C24B;--seal:#F0428C;--seal-soft:#F0428C22;--teal:#06A77D;--teal-soft:#06A77D22;--gold:#FFB400;--note:#2F6FED;--note-soft:#2F6FED22;--danger:#E63946;--font-main:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif}
 *{box-sizing:border-box}html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);font-family:var(--font-main);font-weight:700;overflow-x:hidden;min-height:100%}body{padding:24px 20px 60px;min-height:100vh}.wrap{max-width:960px;margin:auto}
@@ -41,6 +41,10 @@ Future changes should start from THIS file.
 .ledger-wrap{max-width:760px;margin:0 auto}.ledger-monthbar{display:flex;align-items:center;justify-content:center;gap:14px;margin:6px 0 14px}.ledger-monthbar button{border:1px solid #eadbd8;background:#fff;border-radius:10px;padding:7px 12px;font-size:18px}.ledger-month-title{font-size:20px;font-weight:800;min-width:120px;text-align:center}.ledger-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}.ledger-stat{background:#fff;border:1px solid #eee2df;border-radius:14px;padding:13px 6px;text-align:center}.ledger-stat small{display:block;color:#7a6c69;margin-bottom:5px}.ledger-stat b{font-size:19px}.ledger-income b{color:#16785f}.ledger-expense b{color:#c94a52}.ledger-balance b{color:#4c5264}.ledger-add{width:100%;border:0;border-radius:12px;background:#c94a63;color:#fff;font-weight:800;font-size:16px;padding:12px;margin-bottom:14px}.ledger-box{background:#fff;border:1px solid #eee2df;border-radius:14px;overflow:hidden}.ledger-head{display:flex;justify-content:space-between;padding:12px 14px;font-weight:800;cursor:pointer}.ledger-head button{border:0;background:transparent;font-weight:700}.ledger-list{border-top:1px solid #f1e8e6}.ledger-day{padding:7px 14px;background:#fffaf9;font-size:12px;color:#8b7773}.ledger-item{display:grid;grid-template-columns:1fr auto;gap:10px;padding:10px 14px;border-top:1px solid #f4ecea;cursor:pointer}.ledger-item .note{font-size:12px;color:#8a7c79;margin-top:2px}.ledger-item .amt{font-weight:800}.ledger-item .amt.income{color:#16785f}.ledger-item .amt.expense{color:#c94a52}.ledger-empty{text-align:center;color:#9b8b88;padding:28px 12px}.ledger-types{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}.ledger-types button{padding:10px;border-radius:10px;border:1px solid #e7d8d5;background:#fff;font-weight:800}.ledger-types button.active{background:#c94a63;color:#fff}.ledger-edit-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}@media(max-width:600px){.ledger-stat b{font-size:16px}.ledger-stat small{font-size:11px}}
 
 .manual-update-btn{margin-left:auto;border:1px solid var(--rule);background:#fff;color:var(--ink);border-radius:10px;padding:8px 11px;font-weight:700;white-space:nowrap;cursor:pointer}.manual-update-btn:active{transform:translateY(1px)}@media(max-width:600px){.manual-update-btn{font-size:13px;padding:7px 9px}}
+
+/* Smooth initial cloud load */
+#view-calendar.mf-initial-loading{visibility:hidden}
+
 </style>
 
 
@@ -301,7 +305,7 @@ function parseLine(l){let r=[],c='',q=false;for(let i=0;i<l.length;i++){let x=l[
 async function importCsv(file){let text=(await file.text()).replace(/^\uFEFF/,''),rows=text.split(/\r?\n/).filter(Boolean).slice(1).map(parseLine),map=new Map(),notes=[];rows.forEach(r=>{let[date,name,start,end,person,pay,rate,amt,note,type]=r;if(!date)return;if(type==='一般行程')notes.push({id:uid(),type:'note',name,date,endDate:end||date,note:note||'',allDay:start==='全天',time:start==='全天'?'':start});else if(person){let k=[date,name,start,end].join('|');if(!map.has(k))map.set(k,{id:uid(),type:'job',name,date,start,end,note:note||'',assignments:[]});map.get(k).assignments.push({person,payType:pay==='日薪'?'daily':'hourly',rate:Number(rate)||0})}});let x=[...map.values(),...notes];if(x.length&&confirm(`讀到 ${x.length} 筆資料，要新增進目前資料嗎？`)){jobs.push(...x);saveJobs();renderCalendar();populateMonths();renderSettlement();alert('匯入完成！')}}
 document.querySelectorAll('.tab-btn').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab-btn,.view').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById('view-'+b.dataset.tab).classList.add('active');if(b.dataset.tab==='cal'){syncJobsFromCloud()}if(b.dataset.tab==='settle'){populateMonths();let sm=localStorage.getItem('money-forever-settle-month');if(sm&&[...settleMonth.options].some(o=>o.value===sm))settleMonth.value=sm;renderSettlement();syncJobsFromCloud()}if(b.dataset.tab==='ledger'){renderLedger();syncLedgerFromCloud()}});document.querySelectorAll('.type-btn').forEach(b=>b.onclick=()=>setType(b.dataset.type));PEOPLE.forEach(p=>document.getElementById('chk-'+p).onchange=e=>document.getElementById('block-'+p).classList.toggle('disabled',!e.target.checked));
 prevMonth.onclick=()=>{currentView.setMonth(currentView.getMonth()-1);renderCalendar()};nextMonth.onclick=()=>{currentView.setMonth(currentView.getMonth()+1);renderCalendar()};gotoToday.onclick=()=>{currentView=new Date();currentView.setDate(1);renderCalendar()};closeDayPanel.onclick=()=>dayOverlay.classList.remove('active');closeFormPanel.onclick=cancelForm.onclick=()=>formOverlay.classList.remove('active');openAddJob.onclick=()=>openForm();openAddNote.onclick=()=>openForm(null,'note');saveJob.onclick=handleSave;settleMonth.onchange=()=>{localStorage.setItem('money-forever-settle-month',settleMonth.value);renderSettlement()};settlePerson.onchange=renderSettlement;exportCsv.onclick=exportCsv;importCsvBtn.onclick=()=>importCsvFile.click();importCsvFile.onchange=e=>{if(e.target.files[0])importCsv(e.target.files[0]);e.target.value=''};f('allday').onchange=e=>noteTimeWrap.style.display=e.target.checked?'none':'block';
-(async()=>{await loadJobs();renderCalendar();})();
+(async()=>{await loadJobs();renderCalendar();document.getElementById('view-calendar')?.classList.remove('mf-initial-loading');})();
 </script>
 
 
@@ -335,35 +339,37 @@ window.addEventListener('load',async()=>{await loadLedger();renderLedger()});
 let mfSyncBusy=false;
 function activeTabName(){let b=document.querySelector('.tab-btn.active');return b?b.dataset.tab:'cal'}
 async function syncJobsFromCloud(){
-  if(mfSyncBusy)return;
   try{
-    const r=await fetch(CLOUD_URL+'?select=id,data&id=eq.1&_mf='+Date.now(),{cache:'no-store',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY,'Cache-Control':'no-cache'}});
+    const r=await fetch(CLOUD_URL+'?select=id,data&id=eq.1',{
+      headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY},
+      cache:'no-store'
+    });
     if(!r.ok)return;
     const rows=await r.json();
-    if(rows.length&&Array.isArray(rows[0].data)){
-      const incoming=rows[0].data;
-      if(JSON.stringify(incoming)!==JSON.stringify(jobs)){
-        jobs=incoming;localStorage.setItem(STORAGE_KEY,JSON.stringify(jobs));
-        const tab=activeTabName();
-        if(tab==='cal')renderCalendar();
-        if(tab==='settle'){populateMonths();let sm=localStorage.getItem('money-forever-settle-month');if(sm&&[...settleMonth.options].some(o=>o.value===sm))settleMonth.value=sm;renderSettlement()}
-      }
-    }
-  }catch(e){console.debug('工作資料同步略過',e)}
+    if(!rows.length||!Array.isArray(rows[0].data))return;
+    const incoming=rows[0].data;
+    if(JSON.stringify(incoming)===JSON.stringify(jobs))return;
+    jobs=incoming;
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(jobs));
+    renderCalendar();
+    if(document.getElementById('view-settle')?.classList.contains('active'))renderSettlement();
+  }catch(e){console.debug('工作背景同步略過',e)}
 }
 async function syncLedgerFromCloud(){
   try{
-    const r=await fetch(CLOUD_URL+`?select=id,data&id=eq.${LEDGER_ID}&_mf=${Date.now()}`,{cache:'no-store',headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY,'Cache-Control':'no-cache'}});
+    const r=await fetch(CLOUD_URL+`?select=id,data&id=eq.${LEDGER_ID}`,{
+      headers:{apikey:SUPABASE_KEY,Authorization:'Bearer '+SUPABASE_KEY},
+      cache:'no-store'
+    });
     if(!r.ok)return;
     const rows=await r.json();
-    if(rows.length&&Array.isArray(rows[0].data)){
-      const incoming=rows[0].data;
-      if(JSON.stringify(incoming)!==JSON.stringify(ledger)){
-        ledger=incoming;localStorage.setItem(LEDGER_KEY,JSON.stringify(ledger));
-        if(activeTabName()==='ledger')renderLedger();
-      }
-    }
-  }catch(e){console.debug('記帳資料同步略過',e)}
+    if(!rows.length||!Array.isArray(rows[0].data))return;
+    const incoming=rows[0].data;
+    if(JSON.stringify(incoming)===JSON.stringify(ledger))return;
+    ledger=incoming;
+    localStorage.setItem(LEDGER_KEY,JSON.stringify(ledger));
+    if(document.getElementById('view-ledger')?.classList.contains('active'))renderLedger();
+  }catch(e){console.debug('記帳背景同步略過',e)}
 }
 async function syncVisibleData(){
   const tab=activeTabName();
