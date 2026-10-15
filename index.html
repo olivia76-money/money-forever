@@ -221,6 +221,13 @@ Future changes should start from THIS file.
   .view{padding-bottom:8px!important}
 }
 </style>
+<style id="mf-calendar-align-fix">
+/* Both grids must share identical, non-content-sized seven columns. */
+.cal-weekdays,.cal-grid{width:100%;min-width:0;grid-template-columns:repeat(7,minmax(0,1fr))!important}
+.cal-weekdays>div,.cal-grid>.cal-cell{min-width:0;max-width:100%;box-sizing:border-box}
+.cal-cell .chip-list,.cal-cell .chip{min-width:0;max-width:100%}
+.cal-weekdays>div:last-child{border-right:0}
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -475,5 +482,5 @@ manualAppUpdate.onclick=()=>{
 };
 setInterval(()=>{if(document.visibilityState==='visible'&&!hasOpenEditor())syncVisibleData()},5000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&!hasOpenEditor())syncVisibleData()});
-</script><div id="mfBuildStamp" style="text-align:center;font-size:10px;opacity:.35;padding:4px 0 8px">MF 2026.10.15-CM5</div>
+</script><div id="mfBuildStamp" style="text-align:center;font-size:10px;opacity:.35;padding:4px 0 8px">MF 2026.10.15-CM6</div>
 </body></html>
